@@ -125,9 +125,9 @@ const Yourprofile = () => {
     }
   
     return (
-      <div className="p-6 ml-[20%]">
+      <div className="p-2 ml-[20px] md:ml-[40%]">
         {/* Profile Header */}
-        <div className="flex items-center   bg-green-700 w-[70%] p-4 rounded shadow-2xl gap-4 mb-6">
+        <div className="flex items-center   bg-green-700 w-[110%] mt-[40px] md:w-[70%] p-4 rounded shadow-2xl gap-4 mb-6">
           <div className="w-20 h-20 border-2 shadow-2xl border-white rounded-full flex items-center justify-center">
             {userData?.profilePicture ? (
               <img src={userData.profilePicture} alt="Profile" className="w-full h-full rounded-full" />
@@ -212,7 +212,7 @@ const Yourprofile = () => {
         {/* Edit Modal */}
         {editingPostId && (
           <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-[400px]">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-[70%] md:w-[400px]">
               <textarea
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}

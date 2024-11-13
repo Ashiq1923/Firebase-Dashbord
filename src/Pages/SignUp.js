@@ -38,7 +38,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-5 border rounded-lg shadow-lg">
+    <div className=" w-[80%] md:w-full max-w-md mx-auto mt-[40%] p-5 border rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold text-center mb-4">Signup</h2>
       <form onSubmit={handleSignup}>
         {/* Username Input Field */}

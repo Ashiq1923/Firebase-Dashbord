@@ -3,6 +3,7 @@ import AddPostPopup from '../Components/Postscomponent/AddPostPopup';
 import { db } from '../config/Firebase/Firebaseconfiguration';
 import { collection, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import PostsHeader from '../Components/Postscomponent/PostsHeader';
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
@@ -63,8 +64,12 @@ const Posts = () => {
   }
 
   return (
-    <div className="post-list ml-[20px]">
-      <div className="ml-[43%] mb-[40px] text-4xl font-bold">Posts</div>
+   <div className='w-[100%]'>
+           <span className='fixed  top-[1px] left-[1px] md:relative w-[100%]  md:left-[-18px] md:top-[-99px]'> <PostsHeader/></span>
+
+   <div className="md:post-list md:ml-[20px]">
+
+      <div className="md:ml-[43%]  mb-[40px] text-4xl font-bold">Posts</div>
 
      
       {posts.map((post) => {
@@ -73,9 +78,9 @@ const Posts = () => {
         return (
           <div
             key={post.id}
-            className="post-card w-[90%] h-auto p-4 mb-[40px] border rounded shadow-xl"
+            className="md:post-card ml-[10px] md:ml-[20%] mb-[20px] w-[110%] md:w-[90%] h-auto p-4 md:mb-[40px] border rounded shadow-xl"
           >
-            <div className="flex items-center mb-3">
+            <div className="flex  items-center mb-3">
               <div className="w-10 h-10 rounded-full bg-gray-500 text-white flex items-center justify-center mr-3">
                 {post.username ? post.username[0].toUpperCase() : 'U'}
               </div>
@@ -119,6 +124,7 @@ const Posts = () => {
           </div>
         );
       })}
+    </div>
     </div>
   );
 };

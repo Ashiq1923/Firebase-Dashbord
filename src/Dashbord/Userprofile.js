@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../config/Firebase/Firebaseconfiguration'; // Firebase configuration
-import { doc, getDoc, collection, getDocs, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, updateDoc, arrayUnion, arrayRemove, onSnapshot } from 'firebase/firestore';
 import { useParams, useNavigate } from 'react-router-dom'; // useParams and useNavigate for routing
 import { getAuth } from 'firebase/auth';
 
@@ -32,28 +32,29 @@ function Userprofile() {
     fetchUserData();
   }, [id]);
 
-  // Fetch user posts
+  // Fetch user posts with real-time updates using onSnapshot
   useEffect(() => {
     setCurrentUser(auth.currentUser); // Set the current logged-in user
 
-    const fetchUserPosts = async () => {
+    const fetchUserPosts = () => {
       if (userData?.email) {
-        try {
-          const postsCollection = collection(db, 'usersprofileposts', userData.email, 'postss'); // Reference to user's posts subcollection
-          const postSnapshot = await getDocs(postsCollection);
+        const postsCollection = collection(db, 'usersprofileposts', userData.email, 'postss');
+        // Real-time updates using onSnapshot
+        const unsubscribe = onSnapshot(postsCollection, (postSnapshot) => {
           const postsList = postSnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }));
           setUserPosts(postsList); // Set the posts data
-        } catch (error) {
-          console.error('Error fetching posts:', error);
-        }
+        });
+
+        // Cleanup the listener when the component unmounts or the user changes
+        return () => unsubscribe();
       }
     };
 
     if (userData?.email) {
-      fetchUserPosts(); // Fetch posts when userData is available
+      fetchUserPosts();
     }
   }, [userData, auth]);
 
@@ -61,6 +62,7 @@ function Userprofile() {
   const handleLike = async (postId, isLiked) => {
     const postRef = doc(db, 'usersprofileposts', userData.email, 'postss', postId);
     try {
+      // Update like/unlike action in Firestore
       if (isLiked) {
         await updateDoc(postRef, {
           likedBy: arrayRemove(currentUser.uid),
@@ -81,19 +83,20 @@ function Userprofile() {
   };
 
   return (
-    <div className="flex flex-col items-center p-6">
+    <div className="flex flex-col items-center p-6 md:ml-[40%] w-[120%] md:w-[70%]">
       {/* Back Button */}
-      <div className="w-[70%] ml-[100px] fixed">
+      <div className="w-[70%] md:ml-[10%] fixed top-[70px] left-[87%] md:left-[10%] md:top-[20px]">
         <button
           onClick={() => navigate('/Allprofile')} // Navigate to Allprofile
           className="text-gray-600 hover:text-gray-900 flex items-center gap-2"
         >
-          <span className="text-5xl font-bold">←</span> {/* Left arrow */}
+          <span className="text-5xl font-bold md:block hidden">←</span> {/* Left arrow */}
+          <span className="text-2xl text-[red] font-bold md:hidden block">X</span> {/* Left arrow */}
         </button>
       </div>
 
       {/* Profile Header */}
-      <div className="flex items-center bg-green-700 mt-[100px] w-[70%] p-4 rounded shadow-2xl gap-4 mb-6">
+      <div className="flex items-center bg-green-700 md:mt-[1px] md:w-[70%] p-4 rounded shadow-2xl gap-4 mb-6">
         <div className="w-20 h-20 border-2 shadow-2xl border-white rounded-full flex items-center justify-center">
           {userData?.profilePicture ? (
             <img
@@ -126,7 +129,7 @@ function Userprofile() {
       <h3 className="text-lg font-semibold mb-2">Posts</h3>
 
       {/* User Posts */}
-      <div className="w-[70%] mt-6 p-4 rounded shadow-xl bg-white">
+      <div className="w-[100%] mb-[10px] md:w-[70%] mt-6 p-4 rounded shadow-xl bg-white">
         {userPosts.length === 0 ? (
           <p className="text-gray-600">No posts available.</p>
         ) : (
@@ -134,7 +137,7 @@ function Userprofile() {
             const isLiked = post.likedBy && post.likedBy.includes(currentUser?.uid);
 
             return (
-              <div key={post.id} className="mb-4 border-b pb-4">
+              <div key={post.id} className="mb-[20px] md:mb-4 border-b pb-4">
                 <div className="flex items-center mb-3">
                   <div className="w-10 h-10 rounded-full bg-gray-500 text-white flex items-center justify-center mr-3">
                     {post.username ? post.username[0].toUpperCase() : 'U'}

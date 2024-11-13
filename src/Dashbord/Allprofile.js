@@ -26,22 +26,24 @@ function Allprofile() {
   }, []);
 
   return (
-    
-    <div className="flex  justify-center gap-6 p-6 border-2">
+
+    <div className=" w-[100%] h-auto md:flex justify-center mt-[30px] ml-[20px] md:ml-[19%] gap-6 md:p-6 md:border-2">
+    <h1 className='fixed top-[0px] left-[16%] text-2xl font-bold bg-slate-200 border-2 p-4 w-[84%]'>All Users</h1>
       {users.map((user) => (
         
         <Link 
           to={`/Userprofile/${user.id}`} // Pass user.id in the URL
           key={user.id} 
-          className=" flex flex-col items-center w-[15%] h-[150px] border rounded-lg shadow-lg transform transition-transform  hover:scale-105 hover:shadow-xl"
+          className=" flex mb-[10px] w-[110%] h-[100px]  p-2 flex-row md:flex-col items-center md:w-[15%] md:h-[150px] border rounded-lg shadow-lg transform transition-transform  hover:scale-105 hover:shadow-xl "
         >
-          <div className="mt-[20px] w-16 h-16 flex items-center justify-center border-2 border-gray-500 text-[gray] text-2xl font-bold rounded-full mb-2">
+          <div className="  w-12 h-12 ml-[10px] flex items-center justify-center border-2 border-gray-500 text-[gray] text-2xl font-bold rounded-full md:w-16 md:h-16 md:mb-2 md:mt-[20px] md:mr-[10px]">
             {user.username ? user.username[0].toUpperCase() : 'U'}
           </div>
-          <p className="text-center font-semibold text-gray-800">{user.username}</p>
+          <p className="  font-semibold text-gray-800 ml-[20px]  md:text-center md:ml-[-0px]">{user.username}</p>
         </Link>
       ))}
     </div>
+    
   );
 }
 

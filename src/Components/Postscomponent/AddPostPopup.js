@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../../config/Firebase/Firebaseconfiguration';
-import { collection, doc, setDoc, serverTimestamp, getDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 
 const AddPostPopup = ({ setShowPopup, onPostAdded }) => {
   const [postContent, setPostContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [userDataLoading, setUserDataLoading] = useState(true);
+  const [message, setMessage] = useState(''); // State for message notifications
 
   const getFormattedDate = () => {
     const date = new Date();
@@ -26,7 +27,7 @@ const AddPostPopup = ({ setShowPopup, onPostAdded }) => {
       const user = auth.currentUser;
 
       if (!user) {
-        alert('You must be logged in to post');
+        setMessage('You must be logged in to post');
         setUserDataLoading(false);
         return;
       }
@@ -38,13 +39,14 @@ const AddPostPopup = ({ setShowPopup, onPostAdded }) => {
         if (userDoc.exists()) {
           setUsername(userDoc.data().username);
         } else {
-          alert('User data not found!');
+          setMessage('User data not found!');
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
-        alert('Failed to fetch user data');
+        setMessage('Failed to fetch user data');
       } finally {
         setUserDataLoading(false);
+        setTimeout(() => setMessage(''), 3000); // Clear message after 3 seconds
       }
     };
 
@@ -53,7 +55,8 @@ const AddPostPopup = ({ setShowPopup, onPostAdded }) => {
 
   const handleSavePost = async () => {
     if (!postContent.trim()) {
-      alert('Post content cannot be empty');
+      setMessage('Post content cannot be empty');
+      setTimeout(() => setMessage(''), 3000); // Clear message after 3 seconds
       return;
     }
 
@@ -63,8 +66,9 @@ const AddPostPopup = ({ setShowPopup, onPostAdded }) => {
       const user = auth.currentUser;
 
       if (!user) {
-        alert('You must be logged in to post');
+        setMessage('You must be logged in to post');
         setLoading(false);
+        setTimeout(() => setMessage(''), 3000);
         return;
       }
 
@@ -86,25 +90,32 @@ const AddPostPopup = ({ setShowPopup, onPostAdded }) => {
       const userPostsSubcollectionRef = doc(userProfilePostRef, 'postss', newPostId);
       await setDoc(userPostsSubcollectionRef, postData);
 
-      alert('Post added successfully');
+      setMessage('Post added successfully');
       setShowPopup(false);
 
-      // Trigger re-render in Posts component
       if (onPostAdded) {
-        onPostAdded(postData); // Pass post data to the parent component
+        onPostAdded(postData); // Notify the parent component
       }
     } catch (error) {
       console.error('Error adding post:', error);
-      alert('Failed to add post');
+      setMessage('Failed to add post');
     } finally {
       setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
     }
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 w-1/3 rounded">
+    <div className="w-full fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white p-6 md:w-1/3 rounded">
         <h2 className="text-xl mb-4">Add a Post</h2>
+
+        {/* Display message notification */}
+        {message && (
+          <div className="bg-blue-500 text-white p-2 rounded mb-4 text-center">
+            {message}
+          </div>
+        )}
 
         {userDataLoading ? (
           <div>Loading user data...</div>
