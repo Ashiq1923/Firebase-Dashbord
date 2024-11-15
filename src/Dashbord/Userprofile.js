@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../config/Firebase/Firebaseconfiguration'; // Firebase configuration
-import { doc, getDoc, collection, getDocs, updateDoc, arrayUnion, arrayRemove, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, collection, updateDoc, arrayUnion, arrayRemove, onSnapshot } from 'firebase/firestore';
 import { useParams, useNavigate } from 'react-router-dom'; // useParams and useNavigate for routing
 import { getAuth } from 'firebase/auth';
+import ProfileHeader from '../Components/userprofilecomponent/Profileheader';
+import PostCard from '../Components/userprofilecomponent/Postcard';
 
 function Userprofile() {
   const { id } = useParams(); // Get the user ID from the URL
@@ -60,16 +62,40 @@ function Userprofile() {
 
   // Handle like/unlike functionality
   const handleLike = async (postId, isLiked) => {
-    const postRef = doc(db, 'usersprofileposts', userData.email, 'postss', postId);
+    const globalPostRef = doc(db, 'posts', postId); // Reference to the global posts collection
+    const userProfilePostRef = doc(db, 'usersprofileposts', userData.email, 'postss', postId); // Reference to the user's profile post in postss subcollection
+
     try {
-      // Update like/unlike action in Firestore
       if (isLiked) {
-        await updateDoc(postRef, {
+        // If the post is liked, remove the user from the likedBy array in the global post and user profile post
+        await updateDoc(globalPostRef, {
           likedBy: arrayRemove(currentUser.uid),
         });
+
+        // Remove the post from the user's profile post collection when unliking
+        await updateDoc(userProfilePostRef, {
+          likedBy: arrayRemove(currentUser.uid),
+        });
+
+        // Optionally, if you want to track liked posts in the user profile document, you can remove it from an array in the user profile:
+        await updateDoc(doc(db, 'users', userData.email), {
+          likedPosts: arrayRemove(postId),
+        });
+
       } else {
-        await updateDoc(postRef, {
+        // If the post is not liked, add the user to the likedBy array in the global post and user profile post
+        await updateDoc(globalPostRef, {
           likedBy: arrayUnion(currentUser.uid),
+        });
+
+        // Add the post to the user's profile post collection when liking
+        await updateDoc(userProfilePostRef, {
+          likedBy: arrayUnion(currentUser.uid),
+        });
+
+        // Optionally, if you want to track liked posts in the user profile document, you can add it to an array in the user profile:
+        await updateDoc(doc(db, 'users', userData.email), {
+          likedPosts: arrayUnion(postId),
         });
       }
     } catch (error) {
@@ -91,41 +117,12 @@ function Userprofile() {
           className="text-gray-600 hover:text-gray-900 flex items-center gap-2"
         >
           <span className="text-5xl font-bold md:block hidden">←</span> {/* Left arrow */}
-          <span className="text-2xl text-[red] font-bold md:hidden block">X</span> {/* Left arrow */}
         </button>
       </div>
 
       {/* Profile Header */}
-      <div className="flex items-center bg-green-700 md:mt-[1px] md:w-[70%] p-4 rounded shadow-2xl gap-4 mb-6">
-        <div className="w-20 h-20 border-2 shadow-2xl border-white rounded-full flex items-center justify-center">
-          {userData?.profilePicture ? (
-            <img
-              src={userData.profilePicture}
-              alt="Profile"
-              className="w-full h-full rounded-full"
-            />
-          ) : (
-            <span className="text-3xl text-white">
-              {userData?.username?.[0]?.toUpperCase() || 'A'}
-            </span>
-          )}
-        </div>
-        <div>
-          <h2 className="text-2xl font-semibold text-white">
-            {userData?.username || 'No Username'}
-          </h2>
-          <p className="text-sm text-white">{userData?.email || 'No email available'}</p>
-          <p className="text-gray-400">
-            {userData?.createdAt
-              ? `Joined on ${userData.createdAt.toDate().toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}`
-              : 'Account creation date not available.'}
-          </p>
-        </div>
-      </div>
+      {userData && <ProfileHeader userData={userData} navigate={navigate} />}
+
       <h3 className="text-lg font-semibold mb-2">Posts</h3>
 
       {/* User Posts */}
@@ -133,53 +130,16 @@ function Userprofile() {
         {userPosts.length === 0 ? (
           <p className="text-gray-600">No posts available.</p>
         ) : (
-          userPosts.map((post) => {
-            const isLiked = post.likedBy && post.likedBy.includes(currentUser?.uid);
-
-            return (
-              <div key={post.id} className="mb-[20px] md:mb-4 border-b pb-4">
-                <div className="flex items-center mb-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-500 text-white flex items-center justify-center mr-3">
-                    {post.username ? post.username[0].toUpperCase() : 'U'}
-                  </div>
-                  <div>
-                    <p className="font-bold">{post.username}</p>
-                    <p className="text-sm text-gray-500">{post.createdAt}</p>
-                  </div>
-                </div>
-
-                <div
-                  className="mb-3 border rounded p-2 w-full max-h-[150px] overflow-hidden"
-                  style={{
-                    maxHeight: expandedPostId === post.id ? 'none' : '150px',
-                  }}
-                >
-                  <p className="text-base w-[100%] h-[150px] text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
-                    {post.content}
-                  </p>
-                </div>
-
-                {post.content && post.content.length > 150 && (
-                  <button
-                    onClick={() => toggleContent(post.id)}
-                    className="text-blue-500 text-sm mt-2"
-                  >
-                    {expandedPostId === post.id ? 'See Less' : 'See More'}
-                  </button>
-                )}
-
-                <div className="flex items-center justify-between mt-3">
-                  <button
-                    onClick={() => handleLike(post.id, isLiked)}
-                    className={`p-2 rounded ${isLiked ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'} text-white`}
-                  >
-                    {isLiked ? 'Unlike' : 'Like'}
-                  </button>
-                  <span>{post.likedBy ? post.likedBy.length : 0} Likes</span>
-                </div>
-              </div>
-            );
-          })
+          userPosts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              currentUser={currentUser}
+              handleLike={handleLike}
+              toggleContent={toggleContent}
+              expandedPostId={expandedPostId}
+            />
+          ))
         )}
       </div>
     </div>

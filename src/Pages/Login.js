@@ -33,13 +33,13 @@ const Login = () => {
   };
 
   return (
-    <div className="md:w-full  w-[80%] max-w-md mx-auto mt-[40%] md:mt-[10%] p-5 border rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
+    <div className="md:w-full  w-[80%] max-w-md mx-auto mt-[40%] md:mt-[10%] p-5 border rounded-lg shadow-2xl bg-gray-800 md:bg-white">
+      <h2 className="text-white md:text-black text-2xl font-bold text-center mb-4">Login</h2>
       <form onSubmit={handleLogin}>
         <input
           type="email"
           placeholder="Enter your email"
-          className="w-full p-2 mb-3 border rounded"
+          className="w-full p-2  mb-3 border rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -53,7 +53,7 @@ const Login = () => {
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <button
           type="submit"
-          className={`w-full p-2 bg-blue-500 text-white rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full p-2 bg-blue-600 text-white rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={loading}
         >
           {loading ? 'Logging in...' : 'Log In'}
@@ -61,7 +61,7 @@ const Login = () => {
       </form>
 
       <div className="mt-4 text-center">
-        <p>Don't have an account?</p>
+        <p className='text-white md:text-black'>Don't have an account?</p>
         <Link to="/signup" className="text-blue-500 hover:underline">Sign up here</Link>
       </div>
     </div>

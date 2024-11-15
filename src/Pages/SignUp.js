@@ -20,14 +20,18 @@ const Signup = () => {
       // Firebase signup function call with email converted to lowercase
       const user = await signup(email.toLowerCase(), password);
 
+      // Set expiration time to 2 hours from signup time
+      const expirationTime = new Date();
+      expirationTime.setHours(expirationTime.getHours() + 2);
+
       // Firestore mein user ka data save karna using uid
       await setDocument('users', user.uid, {
         username: username, // Adding username to Firestore
         email: user.email,
         createdAt: new Date(),
+        newUserExpiresAt: expirationTime, // Add 2-hour expiration time for new user
       });
 
-      
       // Navigate to login page after successful signup
       navigate('/login');
     } catch (err) {
@@ -38,8 +42,8 @@ const Signup = () => {
   };
 
   return (
-    <div className=" w-[80%] md:w-full max-w-md mx-auto mt-[40%] md:mt-[10%] p-5 border rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-4">Signup</h2>
+    <div className=" w-[80%] md:w-full max-w-md mx-auto mt-[40%] md:mt-[10%] p-5 border rounded-lg shadow-2xl bg-gray-800 md:bg-white">
+      <h2 className="text-white md:text-black text-2xl font-bold text-center mb-4">Signup</h2>
       <form onSubmit={handleSignup}>
         {/* Username Input Field */}
         <input
@@ -77,7 +81,7 @@ const Signup = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          className={`w-full p-2 bg-blue-500 text-white rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full p-2 bg-blue-600 text-white rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={loading}
         >
           {loading ? 'Signing Up...' : 'Sign Up'}
@@ -85,7 +89,7 @@ const Signup = () => {
       </form>
 
       {/* Already have an account? Link */}
-      <p className="text-center mt-4">
+      <p className="text-center mt-4 text-white md:text-black">
         Already have an account?{' '}
         <span
           className="text-blue-500 cursor-pointer hover:underline"
